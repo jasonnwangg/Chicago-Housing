@@ -3,7 +3,9 @@
 #Add Functions and Load Data
 
 source("http://bigblue.depaul.edu/jlee141/econdata/R/func_lib.R")
+
 house<-read.csv("https://bigblue.depaul.edu/jlee141/econdata/housing/mls2021_sample.csv")
+
 str(house)
 
 ### Descriptive Statistics ###
