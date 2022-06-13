@@ -8,7 +8,7 @@ house<-read.csv("https://bigblue.depaul.edu/jlee141/econdata/housing/mls2021_sam
 
 str(house)
 
-### Descriptive Statistics ###
+## Descriptive Statistics ##
 
 library('dplyr')
 library('ggplot2')
@@ -85,7 +85,7 @@ house2$PRICE_LEVEL<-ifelse(house2$HPRICE>324000,1,0)
 house2<-subset(house2,select=-c(HPRICE))
 str(house2)
 
-## Descriptive Statistics ##
+## Predictive Statistics ##
 
 ### K-Means Clustering ###
 
