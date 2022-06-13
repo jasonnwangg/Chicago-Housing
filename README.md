@@ -91,7 +91,7 @@ house1_data_scale<-scale(house1_data)
 house1_data<-dist(house1_data_scale)
 house1_data
 
-# Find the optimal number of clusters
+Find the optimal number of clusters
 
 fviz_nbclust(house1_data_scale,kmeans,method="wss")+labs(subtitle="Elbow Method")
 
