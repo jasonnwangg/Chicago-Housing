@@ -1,19 +1,21 @@
-# Chicago-Housing
-Project: Chicago Housing
+## Chicago-Housing ##
 
-### Add Functions and Load Data ###
+#Add Functions and Load Data
 
 source("http://bigblue.depaul.edu/jlee141/econdata/R/func_lib.R")
 house<-read.csv("https://bigblue.depaul.edu/jlee141/econdata/housing/mls2021_sample.csv")
 str(house)
+
 ### Descriptive Statistics ###
+
 library('dplyr')
 library('ggplot2')
 
 house$ZIP <- as.factor(house$ZIP)
 summary(house)
 
-#correlation
+#Correlation
+
 house %>% summarise(correlation = cor(HPRICE, SQFT))
 house %>% summarise(correlation = cor(HPRICE, AGEBLD))
 house %>% summarise(correlation = cor(HPRICE, BEDROOM))
@@ -22,12 +24,14 @@ house %>% summarise(correlation = cor(HPRICE, GARAGE))
 house %>% summarise(correlation = cor(HPRICE, FIREPLACE))
 
 #ANOVA
+
 res_aov <- aov(HPRICE~SQFT+BEDROOM+BATHROOM+GARAGE+FIREPLACE+AGEBLD,
                data = house)
 summary(res_aov)
 
-# The scatter plots between the log of house price vs. the log of square feet
-# Add linear regression line of the scatter plot. 
+#The scatter plots between the log of house price vs. the log of square feet
+#Add linear regression line of the scatter plot. 
+
 par(mfrow=c(3,2))
 plot(house$SQFT, house$HPRICE, main="The scatter plots between the house price vs. the square feet", col="skyblue")
 reg_model=lm(HPRICE~SQFT, data = house)
@@ -54,7 +58,8 @@ reg_model6=lm(HPRICE~FIREPLACE, data = house)
 abline(reg_model6, col="red")
 par(mfrow=c(1,1))
 
-# The histograms of the log of house price, the age of building, and the square feet
+#The histograms of the log of house price, the age of building, and the square feet
+
 hist(house$HPRICE, col="skyblue",main="The histograms of the house price")
 hist(house$SQFT, col="orange",main="The histograms of the square feet")
 hist(house$AGEBLD, col="pink",main="The histograms of the age of building")
@@ -66,12 +71,12 @@ hist(house$FIREPLACE, col="gray",main="The histograms of the number of fireplace
 
 ### Create New Data Sets ###
 
-# Chicago HPRICE
+#Chicago HPRICE
 
 house1<-subset(house,select=-c(ZIP,HOUSEID,LOG_PRICE,LOG_SQFT,SOLD_30DAY))
 str(house1)
 
-# Chicago PRICE_LEVEL (dummy variable)
+#Chicago PRICE_LEVEL (dummy variable)
 
 house2<-house1
 house2$PRICE_LEVEL<-ifelse(house2$HPRICE>324000,1,0)
@@ -91,7 +96,7 @@ house1_data_scale<-scale(house1_data)
 house1_data<-dist(house1_data_scale)
 house1_data
 
-#Find the optimal number of clusters#
+#Find the optimal number of clusters
 
 fviz_nbclust(house1_data_scale,kmeans,method="wss")+labs(subtitle="Elbow Method")
 
@@ -127,7 +132,8 @@ summary(multiple_regression)
 
 ### Linear Probability Model ###
 
-# set up train and test dataset 
+#set up train and test dataset 
+
 indata<-house2
 train_idx<-sample(nrow(indata),round(.8*nrow(indata)))
 train<-indata[train_idx,]
@@ -186,7 +192,8 @@ rfhat0 <- rfhat0[,2]
 conf_table(rfhat0, testy, "RANDOMFOREST")
 auc_plot(rfhat0, testy, "RANDOMFOREST")
 
-# Find the best mtry
+#Find the best mtry
+
 oob.values <- vector(length = 12)
 for (i in 1:12) {temp.model <- randomForest(formula=PRICE_LEVEL ~ ., data=train, mtry=i,ntree=500) 
 oob.values[i] <- temp.model$err.rate[nrow(temp.model$err.rate),1]}
@@ -194,7 +201,8 @@ cbind(1:12, oob.values)
 
 #the best mtry is 2.
 
-# Find the best ntree
+#Find the best ntree
+
 rf_tree <- randomForest(formula=PRICE_LEVEL ~ ., data=train, mtry=i,ntree=1000)
 Trees <- rep(1:nrow(rf_tree$err.rate))
 Error.rate <- rf_tree$err.rate[,"OOB"]
@@ -280,19 +288,19 @@ str(sub_far2)
 
 ### North Models ###
 
-# Linear Regression
+#Linear Regression
 
 plot(sub_north1$SQFT,sub_north$HPRICE)
 sub_north1_regression<-lm(HPRICE~SQFT,data=sub_north1)
 abline(sub_north1_regression,col="blue",lwd=2)
 summary(sub_north1_regression)
 
-# Multiple Regression #
+#Multiple Regression
 
 multiple_regression<-lm(HPRICE~.,data=sub_north1)
 summary(multiple_regression)
 
-# Linear Probability Model
+#Linear Probability Model
 
 indata1<-sub_north2
 train_idx1<-sample(nrow(indata1),round(.8*nrow(indata1)))
@@ -306,7 +314,7 @@ yhat01<-predict(lm01,newdata=test1)
 conf_table(yhat01,testy1,"LPM")
 auc_plot(yhat01,testy1,"LPM")
 
-# Logistic Regression #
+#Logistic Regression
 
 logit1<-glm(PRICE_LEVEL~.,data=train1,family=binomial(link=logit))
 summary(logit1)
@@ -314,7 +322,7 @@ loghat1<-predict(logit1,newdata=test1,type="response")
 conf_table(loghat1,testy1,"LOGIT")
 auc_plot(loghat1,testy1,"LOGIT")
 
-# Random Forest
+#Random Forest
 
 train1$PRICE_LEVEL <- as.factor(train1$PRICE_LEVEL)
 test1$PRICE_LEVEL <-  as.factor(test1$PRICE_LEVEL)
@@ -326,21 +334,23 @@ rfhat01 <- rfhat01[,2]
 conf_table(rfhat01, testy1, "RANDOMFOREST")
 auc_plot(rfhat01, testy1, "RANDOMFOREST")
 
-# Find the best mtry
+#Find the best mtry
+
 oob.values <- vector(length = 12)
 for (i in 1:12) {temp.model <- randomForest(formula=PRICE_LEVEL ~ ., data=train1, mtry=i,ntree=500) 
 oob.values[i] <- temp.model$err.rate[nrow(temp.model$err.rate),1]}
 cbind(1:12, oob.values)
 
-#the best mtry is 1.
+#The best mtry is 1.
 
-# Find the best ntree
+#Find the best ntree
+
 rf_tree <- randomForest(formula=PRICE_LEVEL ~ ., data=train1, mtry=i,ntree=1000)
 Trees <- rep(1:nrow(rf_tree$err.rate))
 Error.rate <- rf_tree$err.rate[,"OOB"]
 plot(Trees, Error.rate, col="skyblue")
 
-#Tree might be 100
+#Tree might be 100.
 
 rf11 <- randomForest(formula(PRICE_LEVEL~.),data=train1,mtry=1,ntree=100)
 summary(rf11)
@@ -349,22 +359,21 @@ rfhat11=rfhat11[,2]
 conf_table(rfhat11,testy1,"RANDOMFOREST")
 auc_plot(rfhat11,testy1,"RANDOMFOREST")
 
-
 ### West Models ###
 
-# Linear Regression
+#Linear Regression
 
 plot(sub_west1$SQFT,sub_west$HPRICE)
 sub_west1_regression<-lm(HPRICE~SQFT,data=sub_west1)
 abline(sub_west1_regression,col="blue",lwd=2)
 summary(sub_west1_regression)
 
-# Multiple Regression #
+#Multiple Regression
 
 multiple_regression<-lm(HPRICE~.,data=sub_west1)
 summary(multiple_regression)
 
-# Linear Probability Model
+#Linear Probability Model
 
 indata2<-sub_west2
 train_idx2<-sample(nrow(indata2),round(.8*nrow(indata2)))
@@ -378,7 +387,7 @@ yhat02<-predict(lm02,newdata=test2)
 conf_table(yhat02,testy2,"LPM")
 auc_plot(yhat02,testy2,"LPM")
 
-# Logistic Regression #
+#Logistic Regression
 
 logit2<-glm(PRICE_LEVEL~.,data=train2,family=binomial(link=logit))
 summary(logit2)
@@ -386,7 +395,7 @@ loghat2<-predict(logit2,newdata=test2,type="response")
 conf_table(loghat2,testy2,"LOGIT")
 auc_plot(loghat2,testy2,"LOGIT")
 
-# Random Forest
+#Random Forest
 
 train2$PRICE_LEVEL <- as.factor(train2$PRICE_LEVEL)
 test2$PRICE_LEVEL <-  as.factor(test2$PRICE_LEVEL)
@@ -398,21 +407,23 @@ rfhat02 <- rfhat02[,2]
 conf_table(rfhat02, testy2, "RANDOMFOREST")
 auc_plot(rfhat02, testy2, "RANDOMFOREST")
 
-# Find the best mtry
+#Find the best mtry
+
 oob.values <- vector(length = 12)
 for (i in 1:12) {temp.model <- randomForest(formula=PRICE_LEVEL ~ ., data=train2, mtry=i,ntree=500) 
 oob.values[i] <- temp.model$err.rate[nrow(temp.model$err.rate),1]}
 cbind(1:12, oob.values)
 
-#the best mtry is 1.
+#The best mtry is 1.
 
-# Find the best ntree
+#Find the best ntree
+
 rf_tree <- randomForest(formula=PRICE_LEVEL ~ ., data=train2, mtry=i,ntree=1000)
 Trees <- rep(1:nrow(rf_tree$err.rate))
 Error.rate <- rf_tree$err.rate[,"OOB"]
 plot(Trees, Error.rate, col="skyblue")
 
-#Tree might be 100
+#Tree might be 100.
 
 rf12 <- randomForest(formula=PRICE_LEVEL~.,data=train2,mtry=1,ntree=100)
 summary(rf12)
@@ -421,22 +432,21 @@ rfhat12=rfhat12[,2]
 conf_table(rfhat12,testy2,"RANDOMFOREST")
 auc_plot(rfhat12,testy2,"RANDOMFOREST")
 
-
 ### Southwest Models ###
 
-# Linear Regression
+#Linear Regression
 
 plot(sub_southwest1$SQFT,sub_southwest$HPRICE)
 sub_southwest1_regression<-lm(HPRICE~SQFT,data=sub_southwest1)
 abline(sub_southwest1_regression,col="blue",lwd=2)
 summary(sub_southwest1_regression)
 
-# Multiple Regression #
+#Multiple Regression
 
 multiple_regression<-lm(HPRICE~.,data=sub_southwest1)
 summary(multiple_regression)
 
-# Linear Probability Model
+#Linear Probability Model
 
 indata3<-sub_southwest2
 train_idx3<-sample(nrow(indata3),round(.8*nrow(indata3)))
@@ -450,7 +460,7 @@ yhat03<-predict(lm03,newdata=test3)
 conf_table(yhat03,testy3,"LPM")
 auc_plot(yhat03,testy3,"LPM")
 
-# Logistic Regression #
+#Logistic Regression
 
 logit3<-glm(PRICE_LEVEL~.,data=train3,family=binomial(link=logit))
 summary(logit3)
@@ -458,7 +468,7 @@ loghat3<-predict(logit3,newdata=test3,type="response")
 conf_table(loghat3,testy3,"LOGIT")
 auc_plot(loghat3,testy3,"LOGIT")
 
-# Random Forest
+#Random Forest
 
 train3$PRICE_LEVEL <- as.factor(train3$PRICE_LEVEL)
 test3$PRICE_LEVEL <-  as.factor(test3$PRICE_LEVEL)
@@ -470,7 +480,8 @@ rfhat03 <- rfhat03[,2]
 conf_table(rfhat03, testy3, "RANDOMFOREST")
 auc_plot(rfhat03, testy3, "RANDOMFOREST")
 
-# Find the best mtry
+#Find the best mtry
+
 oob.values <- vector(length = 12)
 for (i in 1:12) {temp.model <- randomForest(formula=PRICE_LEVEL ~ ., data=train3, mtry=i,ntree=500) 
 oob.values[i] <- temp.model$err.rate[nrow(temp.model$err.rate),1]}
@@ -478,13 +489,14 @@ cbind(1:12, oob.values)
 
 #the best mtry is 2.
 
-# Find the best ntree
+#Find the best ntree
+
 rf_tree <- randomForest(formula=PRICE_LEVEL ~ ., data=train3, mtry=i,ntree=1000)
 Trees <- rep(1:nrow(rf_tree$err.rate))
 Error.rate <- rf_tree$err.rate[,"OOB"]
 plot(Trees, Error.rate, col="skyblue")
 
-#Tree might be 570
+#Tree might be 570.
 
 rf13 <- randomForest(formula=PRICE_LEVEL~.,data=train3,mtry=2,ntree=570)
 summary(rf13)
@@ -495,19 +507,19 @@ auc_plot(rfhat13,testy3,"RANDOMFOREST")
 
 ### South Models ###
 
-# Linear Regression
+#Linear Regression
 
 plot(sub_south1$SQFT,sub_south1$HPRICE)
 sub_south1_regression<-lm(HPRICE~SQFT,data=sub_south1)
 abline(sub_south1_regression,col="blue",lwd=2)
 summary(sub_south1_regression)
 
-# Multiple Regression #
+#Multiple Regression
 
 multiple_regression<-lm(HPRICE~.,data=sub_south1)
 summary(multiple_regression)
 
-# Linear Probability Model
+#Linear Probability Model
 
 indata4<-sub_south2
 train_idx4<-sample(nrow(indata4),round(.8*nrow(indata4)))
@@ -521,7 +533,7 @@ yhat04<-predict(lm04,newdata=test4)
 conf_table(yhat04,testy4,"LPM")
 auc_plot(yhat04,testy4,"LPM")
 
-# Logistic Regression #
+#Logistic Regression
 
 logit4<-glm(PRICE_LEVEL~.,data=train4,family=binomial(link=logit))
 summary(logit4)
@@ -529,7 +541,7 @@ loghat4<-predict(logit4,newdata=test4,type="response")
 conf_table(loghat4,testy4,"LOGIT")
 auc_plot(loghat4,testy4,"LOGIT")
 
-# Random Forest
+#Random Forest
 
 train4$PRICE_LEVEL <- as.factor(train4$PRICE_LEVEL)
 test4$PRICE_LEVEL <-  as.factor(test4$PRICE_LEVEL)
@@ -541,21 +553,23 @@ rfhat04 <- rfhat04[,2]
 conf_table(rfhat04, testy4, "RANDOMFOREST")
 auc_plot(rfhat04, testy4, "RANDOMFOREST")
 
-# Find the best mtry
+#Find the best mtry
+
 oob.values <- vector(length = 12)
 for (i in 1:12) {temp.model <- randomForest(formula=PRICE_LEVEL ~ ., data=train4, mtry=i,ntree=500) 
 oob.values[i] <- temp.model$err.rate[nrow(temp.model$err.rate),1]}
 cbind(1:12, oob.values)
 
-#the best mtry is 2.
+#The best mtry is 2.
 
-# Find the best ntree
+#Find the best ntree
+
 rf_tree <- randomForest(formula=PRICE_LEVEL ~ ., data=train4, mtry=i,ntree=1000)
 Trees <- rep(1:nrow(rf_tree$err.rate))
 Error.rate <- rf_tree$err.rate[,"OOB"]
 plot(Trees, Error.rate, col="skyblue")
 
-#Tree might be 120
+#Tree might be 120.
 
 rf14 <- randomForest(formula=PRICE_LEVEL~.,data=train4,mtry=2,ntree=120)
 summary(rf14)
@@ -564,21 +578,21 @@ rfhat14=rfhat14[,2]
 conf_table(rfhat14,testy4,"RANDOMFOREST")
 auc_plot(rfhat14,testy4,"RANDOMFOREST")
 
-### Far Models ###
+### Other Models ###
 
-# Linear Regression
+#Linear Regression
 
 plot(sub_far1$SQFT,sub_far1$HPRICE)
 sub_far1_regression<-lm(HPRICE~SQFT,data=sub_far1)
 abline(sub_far1_regression,col="blue",lwd=2)
 summary(sub_far1_regression)
 
-# Multiple Regression #
+#Multiple Regression
 
 multiple_regression<-lm(HPRICE~.,data=sub_far1)
 summary(multiple_regression)
 
-# Linear Probability Model
+#Linear Probability Model
 
 indata5<-sub_far2
 train_idx5<-sample(nrow(indata5),round(.8*nrow(indata5)))
@@ -592,7 +606,7 @@ yhat05<-predict(lm05,newdata=test5)
 conf_table(yhat05,testy5,"LPM")
 auc_plot(yhat05,testy5,"LPM")
 
-# Logistic Regression #
+#Logistic Regression
 
 logit5<-glm(PRICE_LEVEL~.,data=train5,family=binomial(link=logit))
 summary(logit5)
@@ -600,7 +614,7 @@ loghat5<-predict(logit5,newdata=test5,type="response")
 conf_table(loghat5,testy5,"LOGIT")
 auc_plot(loghat5,testy5,"LOGIT")
 
-# Random Forest
+#Random Forest
 
 train5$PRICE_LEVEL <- as.factor(train5$PRICE_LEVEL)
 test5$PRICE_LEVEL <-  as.factor(test5$PRICE_LEVEL)
@@ -612,7 +626,8 @@ rfhat05 <- rfhat05[,2]
 conf_table(rfhat05, testy5, "RANDOMFOREST")
 auc_plot(rfhat05, testy5, "RANDOMFOREST")
 
-# Find the best mtry
+#Find the best mtry
+
 oob.values <- vector(length = 12)
 for (i in 1:12) {temp.model <- randomForest(formula=PRICE_LEVEL ~ ., data=train5, mtry=i,ntree=500) 
 oob.values[i] <- temp.model$err.rate[nrow(temp.model$err.rate),1]}
@@ -620,13 +635,14 @@ cbind(1:12, oob.values)
 
 #the best mtry is 2.
 
-# Find the best ntree
+#Find the best ntree
+
 rf_tree <- randomForest(formula=PRICE_LEVEL ~ ., data=train5, mtry=i,ntree=1000)
 Trees <- rep(1:nrow(rf_tree$err.rate))
 Error.rate <- rf_tree$err.rate[,"OOB"]
 plot(Trees, Error.rate, col="skyblue")
 
-#Tree might be 190
+#Tree might be 190.
 
 rf15 <- randomForest(formula=PRICE_LEVEL~.,data=train5,mtry=2,ntree=190)
 summary(rf15)
