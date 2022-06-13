@@ -580,7 +580,7 @@ rfhat14=rfhat14[,2]
 conf_table(rfhat14,testy4,"RANDOMFOREST")
 auc_plot(rfhat14,testy4,"RANDOMFOREST")
 
-### Other Models ###
+### Other Area Models ###
 
 #Linear Regression
 
