@@ -78,7 +78,7 @@ house2$PRICE_LEVEL<-ifelse(house2$HPRICE>324000,1,0)
 house2<-subset(house2,select=-c(HPRICE))
 str(house2)
 
-### Descriptive Statistics ###
+## Descriptive Statistics ##
 
 ### K-Means Clustering ###
 
